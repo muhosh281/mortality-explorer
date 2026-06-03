@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Mortality & Longevity Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧬 Interactive Mortality & Longevity Explorer</h1>
+            <p class="subtitle">Explore life tables, survival curves, and life expectancy by age, sex, and country</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Control Panel -->
+            <aside class="controls-panel">
+                <h2>Configuration</h2>
+                
+                <div class="form-group">
+                    <label for="countrySelect">Country:</label>
+                    <select id="countrySelect">
+                        <option value="USA">United States (USA)</option>
+                        <option value="UK">United Kingdom (UK)</option>
+                        <option value="South Africa">South Africa</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sexSelect">Sex:</label>
+                    <select id="sexSelect">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ageInput">Current Age:</label>
+                    <input type="number" id="ageInput" min="0" max="110" value="30" step="1">
+                    <small>Range: 0-110</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Table Type:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="tableType" value="period" checked>
+                            Period (current year)
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="tableType" value="cohort">
+                            Cohort (birth cohort)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="calculateBtn" class="btn btn-primary">Calculate</button>
+                    <button id="downloadBtn" class="btn btn-secondary" disabled>Download CSV</button>
+                </div>
+
+                <div id="errorMsg" class="error-message"></div>
+            </aside>
+
+            <!-- Results Panel -->
+            <main class="results-panel">
+                <div class="chart-container">
+                    <h2>Survival Curve</h2>
+                    <canvas id="survivalChart"></canvas>
+                </div>
+
+                <div class="stats-container">
+                    <h2>Life Table Summary</h2>
+                    <div id="statsGrid" class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">Current Age</span>
+                            <span class="stat-value" id="displayAge">—</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Life Expectancy (e<sub>x</sub>)</span>
+                            <span class="stat-value" id="displayEx">—</span>
+                            <span class="stat-unit">years</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Probability to Age 65</span>
+                            <span class="stat-value" id="displayProb65">—</span>
+                            <span class="stat-unit">%</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Probability to Age 80</span>
+                            <span class="stat-value" id="displayProb80">—</span>
+                            <span class="stat-unit">%</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Probability to Age 90</span>
+                            <span class="stat-value" id="displayProb90">—</span>
+                            <span class="stat-unit">%</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Max Lifespan (data)</span>
+                            <span class="stat-value" id="displayMaxAge">—</span>
+                            <span class="stat-unit">years</span>
+                        </div>
+                    </div>
+
+                    <div class="detailed-table">
+                        <h3>Detailed Life Table (Selected Age Onwards)</h3>
+                        <div class="table-wrapper">
+                            <table id="lifeTableData">
+                                <thead>
+                                    <tr>
+                                        <th>Age</th>
+                                        <th>l<sub>x</sub></th>
+                                        <th>d<sub>x</sub></th>
+                                        <th>q<sub>x</sub></th>
+                                        <th>e<sub>x</sub></th>
+                                        <th>Survival %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <tr><td colspan="6">Enter age and click Calculate</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer>
+            <p>Data source: Abridged life tables (period and cohort). For research use only. 
+               <a href="README.md">Documentation</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
