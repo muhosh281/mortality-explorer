@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Mortality & Longevity Explorer</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -510,7 +510,7 @@
     </div>
 
     <script>
-        const LIFE_TABLE_DATA = {
+        var LIFE_TABLE_DATA = {
           "USA": {
             "male": {
               "period": {
@@ -615,19 +615,19 @@
           }
         };
 
-        let lifeData = null;
-        let currentChart = null;
-        let currentResults = null;
+        var lifeData = null;
+        var currentChart = null;
+        var currentResults = null;
 
-        const countrySelect = document.getElementById('countrySelect');
-        const sexSelect = document.getElementById('sexSelect');
-        const ageInput = document.getElementById('ageInput');
-        const calculateBtn = document.getElementById('calculateBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const errorMsg = document.getElementById('errorMsg');
-        const survivalChart = document.getElementById('survivalChart');
+        var countrySelect = document.getElementById('countrySelect');
+        var sexSelect = document.getElementById('sexSelect');
+        var ageInput = document.getElementById('ageInput');
+        var calculateBtn = document.getElementById('calculateBtn');
+        var downloadBtn = document.getElementById('downloadBtn');
+        var errorMsg = document.getElementById('errorMsg');
+        var survivalChart = document.getElementById('survivalChart');
 
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('load', function() {
             loadLifeTableData();
             calculateBtn.addEventListener('click', handleCalculate);
             downloadBtn.addEventListener('click', handleDownload);
@@ -636,7 +636,6 @@
         function loadLifeTableData() {
             try {
                 lifeData = LIFE_TABLE_DATA;
-                clearError();
             } catch (error) {
                 showError('Error loading life table data: ' + error.message);
                 console.error(error);
@@ -647,44 +646,44 @@
             clearError();
             
             try {
-                const country = countrySelect.value;
-                const sex = sexSelect.value;
-                const age = parseInt(ageInput.value);
-                const tableType = document.querySelector('input[name="tableType"]:checked').value;
+                var country = countrySelect.value;
+                var sex = sexSelect.value;
+                var age = parseInt(ageInput.value);
+                var tableType = document.querySelector('input[name="tableType"]:checked').value;
 
                 if (!lifeData) {
                     showError('Life table data not loaded. Please refresh the page.');
                     return;
                 }
 
-                if (!lifeData[country]?.[sex]?.[tableType]) {
-                    showError(`Data not available for ${country} - ${sex} - ${tableType} table.`);
+                if (!lifeData[country] || !lifeData[country][sex] || !lifeData[country][sex][tableType]) {
+                    showError('Data not available for ' + country + ' - ' + sex + ' - ' + tableType + ' table.');
                     return;
                 }
 
-                const tableData = lifeData[country][sex][tableType];
+                var tableData = lifeData[country][sex][tableType];
 
                 if (age < 0 || age > 110) {
                     showError('Age must be between 0 and 110.');
                     return;
                 }
 
-                const ageIndex = findAgeIndex(tableData.ages, age);
+                var ageIndex = findAgeIndex(tableData.ages, age);
                 if (ageIndex === -1) {
-                    showError(`Age ${age} not found in life table.`);
+                    showError('Age ' + age + ' not found in life table.');
                     return;
                 }
 
-                const survivalData = calculateSurvivalProbabilities(tableData, ageIndex);
+                var survivalData = calculateSurvivalProbabilities(tableData, ageIndex);
 
                 currentResults = {
-                    country,
-                    sex,
+                    country: country,
+                    sex: sex,
                     age: tableData.ages[ageIndex],
-                    tableType,
-                    tableData,
-                    ageIndex,
-                    survivalData
+                    tableType: tableType,
+                    tableData: tableData,
+                    ageIndex: ageIndex,
+                    survivalData: survivalData
                 };
 
                 displayResults(currentResults);
@@ -699,7 +698,7 @@
         }
 
         function findAgeIndex(ages, targetAge) {
-            for (let i = 0; i < ages.length; i++) {
+            for (var i = 0; i < ages.length; i++) {
                 if (ages[i] === targetAge) return i;
                 if (ages[i] > targetAge) return i - 1 >= 0 ? i - 1 : 0;
             }
@@ -707,15 +706,16 @@
         }
 
         function calculateSurvivalProbabilities(tableData, ageIndex) {
-            const { ages, lx } = tableData;
-            const baseLx = lx[ageIndex];
-            const survivalData = [];
+            var ages = tableData.ages;
+            var lx = tableData.lx;
+            var baseLx = lx[ageIndex];
+            var survivalData = [];
 
-            for (let i = ageIndex; i < ages.length; i++) {
-                const age = ages[i];
-                const survivalProbability = (lx[i] / baseLx) * 100;
+            for (var i = ageIndex; i < ages.length; i++) {
+                var age = ages[i];
+                var survivalProbability = (lx[i] / baseLx) * 100;
                 survivalData.push({
-                    age,
+                    age: age,
                     probability: Math.max(0, survivalProbability)
                 });
             }
@@ -724,10 +724,11 @@
         }
 
         function calculateSurvivalToAge(tableData, ageIndex, targetAge) {
-            const { ages, lx } = tableData;
+            var ages = tableData.ages;
+            var lx = tableData.lx;
             
-            let targetIndex = -1;
-            for (let i = 0; i < ages.length; i++) {
+            var targetIndex = -1;
+            for (var i = 0; i < ages.length; i++) {
                 if (ages[i] === targetAge) {
                     targetIndex = i;
                     break;
@@ -746,8 +747,14 @@
         }
 
         function displayResults(results) {
-            const { country, sex, age, tableData, ageIndex } = results;
-            const { ages, lx, ex } = tableData;
+            var country = results.country;
+            var sex = results.sex;
+            var age = results.age;
+            var tableData = results.tableData;
+            var ageIndex = results.ageIndex;
+            var ages = tableData.ages;
+            var lx = tableData.lx;
+            var ex = tableData.ex;
 
             document.getElementById('displayAge').textContent = age;
             document.getElementById('displayEx').textContent = 
@@ -758,26 +765,28 @@
                 age <= 80 ? calculateSurvivalToAge(tableData, ageIndex, 80).toFixed(1) : '—';
             document.getElementById('displayProb90').textContent = 
                 age <= 90 ? calculateSurvivalToAge(tableData, ageIndex, 90).toFixed(1) : '—';
-            document.getElementById('displayMaxAge').textContent = Math.max(...ages);
+            
+            var maxAge = Math.max.apply(null, ages);
+            document.getElementById('displayMaxAge').textContent = maxAge;
         }
 
         function updateChart(survivalData) {
-            const ctx = survivalChart.getContext('2d');
+            var ctx = survivalChart.getContext('2d');
 
             if (currentChart) {
                 currentChart.destroy();
             }
 
-            const labels = survivalData.map(d => d.age);
-            const data = survivalData.map(d => d.probability);
+            var labels = survivalData.map(function(d) { return d.age; });
+            var data = survivalData.map(function(d) { return d.probability; });
 
             currentChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels,
+                    labels: labels,
                     datasets: [{
                         label: 'Survival Probability (%)',
-                        data,
+                        data: data,
                         borderColor: '#2563eb',
                         backgroundColor: 'rgba(37, 99, 235, 0.1)',
                         fill: true,
@@ -800,7 +809,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return `Age ${context.label}: ${context.parsed.y.toFixed(1)}%`;
+                                    return 'Age ' + context.label + ': ' + context.parsed.y.toFixed(1) + '%';
                                 }
                             }
                         }
@@ -826,32 +835,27 @@
         }
 
         function updateDetailedTable(tableData, ageIndex) {
-            const { ages, lx, dx, qx, ex } = tableData;
-            const tableBody = document.getElementById('tableBody');
-            const baseLx = lx[ageIndex];
+            var ages = tableData.ages;
+            var lx = tableData.lx;
+            var dx = tableData.dx;
+            var qx = tableData.qx;
+            var ex = tableData.ex;
+            var tableBody = document.getElementById('tableBody');
+            var baseLx = lx[ageIndex];
 
-            const rowCount = Math.min(20, ages.length - ageIndex);
-            let html = '';
+            var rowCount = Math.min(20, ages.length - ageIndex);
+            var html = '';
 
-            for (let i = 0; i < rowCount; i++) {
-                const idx = ageIndex + i;
-                const age = ages[idx];
-                const lxValue = lx[idx];
-                const dxValue = dx ? dx[idx] : 0;
-                const qxValue = qx ? qx[idx] : 0;
-                const exValue = ex ? ex[idx] : 0;
-                const survivalProb = ((lxValue / baseLx) * 100).toFixed(2);
+            for (var i = 0; i < rowCount; i++) {
+                var idx = ageIndex + i;
+                var age = ages[idx];
+                var lxValue = lx[idx];
+                var dxValue = dx ? dx[idx] : 0;
+                var qxValue = qx ? qx[idx] : 0;
+                var exValue = ex ? ex[idx] : 0;
+                var survivalProb = ((lxValue / baseLx) * 100).toFixed(2);
 
-                html += `
-                    <tr>
-                        <td>${age}</td>
-                        <td>${lxValue.toFixed(0)}</td>
-                        <td>${dxValue.toFixed(0)}</td>
-                        <td>${qxValue.toFixed(4)}</td>
-                        <td>${exValue.toFixed(2)}</td>
-                        <td>${survivalProb}%</td>
-                    </tr>
-                `;
+                html += '<tr><td>' + age + '</td><td>' + lxValue.toFixed(0) + '</td><td>' + dxValue.toFixed(0) + '</td><td>' + qxValue.toFixed(4) + '</td><td>' + exValue.toFixed(2) + '</td><td>' + survivalProb + '%</td></tr>';
             }
 
             tableBody.innerHTML = html || '<tr><td colspan="6">No data available</td></tr>';
@@ -864,30 +868,39 @@
             }
 
             try {
-                const { country, sex, age, tableType, tableData, ageIndex } = currentResults;
-                const { ages, lx, dx, qx, ex } = tableData;
-                const baseLx = lx[ageIndex];
+                var country = currentResults.country;
+                var sex = currentResults.sex;
+                var age = currentResults.age;
+                var tableType = currentResults.tableType;
+                var tableData = currentResults.tableData;
+                var ageIndex = currentResults.ageIndex;
+                var ages = tableData.ages;
+                var lx = tableData.lx;
+                var dx = tableData.dx;
+                var qx = tableData.qx;
+                var ex = tableData.ex;
+                var baseLx = lx[ageIndex];
 
-                let csvContent = 'Mortality & Longevity Explorer - Life Table Export\n';
-                csvContent += `Country: ${country}, Sex: ${sex}, Age: ${age}, Table Type: ${tableType}\n\n`;
+                var csvContent = 'Mortality & Longevity Explorer - Life Table Export\n';
+                csvContent += 'Country: ' + country + ', Sex: ' + sex + ', Age: ' + age + ', Table Type: ' + tableType + '\n\n';
                 csvContent += 'Age,lx,dx,qx,ex,Survival Probability (%)\n';
 
-                for (let i = ageIndex; i < ages.length; i++) {
-                    const ageVal = ages[i];
-                    const lxVal = lx[i].toFixed(0);
-                    const dxVal = (dx ? dx[i] : 0).toFixed(0);
-                    const qxVal = (qx ? qx[i] : 0).toFixed(6);
-                    const exVal = (ex ? ex[i] : 0).toFixed(2);
-                    const survivalProb = ((lx[i] / baseLx) * 100).toFixed(2);
+                for (var i = ageIndex; i < ages.length; i++) {
+                    var ageVal = ages[i];
+                    var lxVal = lx[i].toFixed(0);
+                    var dxVal = (dx ? dx[i] : 0).toFixed(0);
+                    var qxVal = (qx ? qx[i] : 0).toFixed(6);
+                    var exVal = (ex ? ex[i] : 0).toFixed(2);
+                    var survivalProb = ((lx[i] / baseLx) * 100).toFixed(2);
 
-                    csvContent += `${ageVal},${lxVal},${dxVal},${qxVal},${exVal},${survivalProb}\n`;
+                    csvContent += ageVal + ',' + lxVal + ',' + dxVal + ',' + qxVal + ',' + exVal + ',' + survivalProb + '\n';
                 }
 
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
+                var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
 
-                const filename = `life_table_${country}_${sex}_age${age}_${tableType}.csv`;
+                var filename = 'life_table_' + country + '_' + sex + '_age' + age + '_' + tableType + '.csv';
                 link.setAttribute('href', url);
                 link.setAttribute('download', filename);
                 link.style.visibility = 'hidden';
